@@ -208,6 +208,20 @@ namespace MyTelegramBot
                 cancellationToken: cancellation
             );
         }
+        private static async Task ResetPasswordCommand(ITelegramBotClient bot, long chatId,int? messageId,CancellationToken cancellation)
+        {
+            var config = GetPasswordConfig(chatId);
+
+            config.Reset();
+
+            await PasswordSettingsHandle(
+               bot,
+               chatId,
+               messageId,
+               cancellation);
+
+
+        }
 
         private static async Task CoinflipCommand(ITelegramBotClient bot, long chatId, CancellationToken cancellation)
         {
@@ -426,7 +440,7 @@ namespace MyTelegramBot
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithUrl("🌐 Open website", "https://github.com/MaksymKozak999?tab=repositories")
+                    InlineKeyboardButton.WithUrl("🌐 Bot website", "https://github.com/MaksymKozak999/Telegram-Bot")
                 }
             });
 
@@ -553,6 +567,10 @@ namespace MyTelegramBot
                 new[]
                 {
                     InlineKeyboardButton.WithCallbackData(symbolStatus, "btn_pw_toggle_sym")
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Reset", "btn_password_reset")
                 }
             });
 
@@ -698,7 +716,14 @@ namespace MyTelegramBot
                     config._includeSymbols = !config._includeSymbols;
                     await PasswordSettingsHandle(bot, chatId, messageId, cancellationToken);
                     break;
-   
+                case "btn_password_reset":
+                    await ResetPasswordCommand(
+                        bot,
+                        chatId,
+                        messageId,
+                        cancellationToken);
+                    break;
+
                 default:
                     Console.WriteLine($"Received unknown callback action: {action}");
                     break;
