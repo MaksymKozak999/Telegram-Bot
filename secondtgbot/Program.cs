@@ -332,6 +332,43 @@ namespace MyTelegramBot
             }
         }
 
+        private static async Task HelpCommand(ITelegramBotClient bot,long chatId,CancellationToken cancellationToken)
+        {
+            string helpText =
+                "📖 *Help*\n\n" +
+                "🎲 *Random Generator*\n" +
+                "Generates random numbers or characters.\n\n" +
+
+                "🪙 *Coinflip*\n" +
+                "Flips a virtual coin: Heads or Tails.\n\n" +
+
+                "🔗 *URL Shortener*\n" +
+                "Shortens long URLs.\n" +
+                "You can also use:\n" +
+                "`/url https://example.com`\n\n" +
+
+                "🎯 *Custom Random Range*\n" +
+                "Generate a number within your own range:\n" +
+                "`/roll <min> <max>`\n" +
+                "Example: `/roll 10 50`\n\n" +
+
+                "🔑 *Password Generator*\n" +
+                "Generates secure random passwords.\n" +
+                "You can configure length, uppercase letters, numbers and symbols in Settings.\n\n" +
+
+                "📝 *Profile*\n" +
+                "Shows your Telegram information and current bot settings.\n\n" +
+
+                "⚙️ *Settings*\n" +
+                "Change random generator and password generator settings.";
+
+            await bot.SendMessage(
+                chatId: chatId,
+                text: helpText,
+                parseMode: ParseMode.Markdown,
+                cancellationToken: cancellationToken);
+        }
+
         // Main update handler
         private static async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
         {
@@ -411,6 +448,9 @@ namespace MyTelegramBot
                             break;
                         case "📝Profile":
                             await ProfileCommand(bot, chatId, message.From, cancellationToken);
+                            break;
+                        case "Help":
+                            await HelpCommand(bot,chatId,cancellationToken);
                             break;
                         default:
                             await HandleUnknownOrStateMessage(bot, chatId, cancellationToken);
