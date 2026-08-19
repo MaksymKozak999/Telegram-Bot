@@ -165,7 +165,6 @@ namespace MyTelegramBot
                 int.TryParse(parts[1], out int min) &&
                 int.TryParse(parts[2], out int max))
             {
-                // Auto-fix range bounds if user writes e.g. /roll 100 1
                 if (min > max)
                 {
                     (min, max) = (max, min);
@@ -410,6 +409,9 @@ namespace MyTelegramBot
                         case "Password Generator":
                             await GenerateAndSendPassword(bot, chatId, cancellationToken);
                             break;
+                        case "📝Profile":
+                            await ProfileCommand(bot, chatId, message.From, cancellationToken);
+                            break;
                         default:
                             await HandleUnknownOrStateMessage(bot, chatId, cancellationToken);
                             break;
@@ -450,6 +452,52 @@ namespace MyTelegramBot
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken
             );
+        }
+
+        private static async Task ProfileCommand(ITelegramBotClient bot,long chatId,User user,CancellationToken cancellationToken)
+        {
+            var config = GetPasswordConfig(chatId);
+
+            _chatModes.TryGetValue(chatId, out string currentMode);
+
+            string randomMode;
+
+            switch (currentMode)
+            {
+                case "char":
+                    randomMode = "Characters (a-z)";
+                    break;
+
+                case "coinflip":
+                    randomMode = "Coinflip";
+                    break;
+
+                default:
+                    randomMode = "Numbers";
+                    break;
+            }
+
+            string username = string.IsNullOrEmpty(user.Username)
+                ? "Not set"
+                : $"@{user.Username}";
+
+            string text =
+                $"👤 *Your Profile*\n\n" +
+                $"Name: {user.FirstName}\n" +
+                $"Username: {username}\n" +
+                $"Telegram ID: `{user.Id}`\n\n" +
+                $"🎲 Random mode: *{randomMode}*\n\n" +
+                $"🔑 *Password settings*\n" +
+                $"📏 Length: {config._length}\n" +
+                $"🔠 Uppercase: {(config._includeUppercase ? "✅" : "❌")}\n" +
+                $"🔢 Numbers: {(config._includeNumbers ? "✅" : "❌")}\n" +
+                $"🔣 Symbols: {(config._includeSymbols ? "✅" : "❌")}";
+
+            await bot.SendMessage(
+                chatId: chatId,
+                text: text,
+                parseMode: ParseMode.Markdown,
+                cancellationToken: cancellationToken);
         }
 
         private static async Task SendMainMenu(ITelegramBotClient bot, long chatId, CancellationToken cancellationToken)
